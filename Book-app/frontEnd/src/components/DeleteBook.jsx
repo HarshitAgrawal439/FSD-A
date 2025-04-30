@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const DeleteBook = () => {
   const [books, setBooks] = useState([]);
@@ -11,25 +11,25 @@ const DeleteBook = () => {
 
   const fetchBooks = async () => {
     try {
-      const res = await axios.get('http://localhost:9000/book');
-      setBooks(res.data.data);
+      const res = await axios.get("http://localhost:9000/books");
+      setBooks(res.data);
     } catch (error) {
       console.error(error);
-      alert('Error fetching books');
+      alert("Error fetching books");
     }
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = confirm('Are you sure you want to delete this book?');
+    const confirmDelete = confirm("Are you sure you want to delete this book?");
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:9000/book/${id}`);
-      alert('Book deleted successfully');
+      await axios.delete(`http://localhost:9000/books/${id}`);
+      alert("Book deleted successfully");
       fetchBooks(); // Refresh book list after deletion
     } catch (error) {
       console.error(error);
-      alert('Error deleting book');
+      alert("Error deleting book");
     }
   };
 
@@ -42,7 +42,7 @@ const DeleteBook = () => {
         <ul>
           {books.map((book) => (
             <li key={book._id}>
-              <strong>{book.title}</strong> by {book.author}{' '}
+              <strong>{book.title}</strong> by {book.author}{" "}
               <button onClick={() => handleDelete(book._id)}>Delete</button>
             </li>
           ))}

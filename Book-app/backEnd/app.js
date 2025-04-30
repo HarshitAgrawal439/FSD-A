@@ -1,113 +1,97 @@
-const express = require('express')
-const dotenv = require('dotenv')
-const connectDb = require('./config/Config')
-const mongoose = require('mongoose')
-const Book = require('./model/user')
-const morgan = require('morgan')
-const cors = require('cors'); // Import cors
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const app = express();
+app.use(express.json());
+app.use(cors());
+dotenv.config();
+//connect to mongodb
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("connected to mongodb"))
+  .catch((err) => console.log("failed to connect"));  
 
-const app = express()
-dotenv.config()
-app.use(cors()); // Enable CORS for all routes
-const PORT = process.env.PORT
+// Design Book Schema
+const BookSchema = new mongoose.Schema({
+    title: String,
+    author: String,
+    date: String,
+    image: String
+})
+// Design Model 
+const Book=mongoose.model('MyBook',BookSchema)
 
-app.use(express.json())
-app.use(morgan('dev')); 
-connectDb()
-
-app.get('/book/search' , async (req, res) => {
+app.post('/books',async (req,res)=>{
     try {
-        const { title } = req.query; 
-        console.log(title);
-        const books = await Book.find({ title: { $regex: title, $options: 'i' } }); 
-        console.log(books);
-        if (books.length === 0) {
-            return res.status(404).json({ message: "No books found" });
-        }
-
-        res.status(200).json({ message: "Books fetched successfully", data: books });
-    } catch (err) {
-        console.error(err);
-        res.status(400).json({ message: "Error fetching books" });
-    }
-})
-app.post('/book',async (req,res)=>{
-    
-    try{
-        const {title,author,date,image} = req.body;
-        const book = await Book.create(
-            {title,author,date,image});
-        res.status(201).json({message : "book Created Successfully", book});
-
-        // console.log(book);
-    }
-    catch{
-        res.status(400).json({message : "ERROR!!!!"});
-    }
-})
-app.get('/book',async(req,res)=>{
-    try{
-        const books = await Book.find();
-        res.status(200).json({message : "Books fetched successfully", data : books});
-        console.log(books);
-    }
-    catch{
-        res.status(400).json({message : "ERROR!!!!"});
-    }
-})
-app.get('/book/:id',async(req,res)=>{
-    try{
-        const {id} = req.params;
-        const book = await Book.findById(id);
-        if(!book){
-            return res.status(404).json({message : "Book not found"});
-        }
-        res.status(200).json({message : "Book fetched successfully", data : book});
-    }
-    catch{
-        res.status(400).json({message : "ERROR!!!!"});
-    }
-})
-
-app.put('/book/:id', async (req, res) => {
-    try {
-        const { id } = req.params; 
-        const { title, author, date, image } = req.body; 
-
+        const NewBook=new Book(req.body);
+        await NewBook.save();
+        res.json(Book);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server Error')
         
-        const updatedBook = await Book.findByIdAndUpdate(
-            id,
-            { title, author, date, image },
-            { new: true, runValidators: true } 
-        );
+    }
+})
 
-        if (!updatedBook) {
-            return res.status(404).json({ message: "Book not found" });
-        }
+app.get('/books',async (req,res)=>{
+    try {
+        const Books=await Book.find();
+        res.json(Books);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server Error')
+        
+    }
+})
 
-        res.status(200).json({ message: "Book updated successfully", data: updatedBook });
-    } catch (err) {
-        console.error(err);
-        res.status(400).json({ message: "Error updating book" });
+
+
+
+
+app.get('/books/:id',async (req,res)=>{
+    const book= await Book.findById(req.params.id);
+    if(!book)
+        return res.status(404).send('Book Not Found')
+    res.json(book)
+})
+
+
+
+app.get('/search', async (req, res) => {
+    const { title } = req.query;
+    try {
+        const books = await Book.find({ title: { $regex: title, $options: 'i' } }); // case-insensitive search
+        res.json(books);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server Error');
     }
 });
 
-app.delete('/book/:id',async (req,res)=>{
-    try{
-        const {id} = req.params;
-        const deletedBook = await Book.findByIdAndDelete(id);
-        if(!deletedBook){
-            return res.status(404).json({message : "Book not found"});
-        }
-        res.status(200).json({message : "Book deleted successfully", data : deletedBook});
+
+
+app.delete('/books/:id', async (req, res) => {
+    try {
+      const book = await Book.findByIdAndDelete(req.params.id);
+      if (!book) return res.status(404).send('Book not found');
+      res.send('Book deleted successfully');
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
     }
-    catch(err){
-        console.error(err);
-        res.status(400).json({message : "ERROR!!!!"});
-    }
+  });
+  
+
+
+app.put('/books/:id',async (req,res)=>{
+    const book=await Book.findByIdAndUpdate(req.params.id,req.body)
+    if(!book)
+        return res.status(404).send('Book Not Found')
+    res.json(book)
 })
 
-app.listen(PORT,()=>{
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`server is running on http://localhost:${PORT}`);
+
+app.listen(9000,()=>{
+    console.log('server is running on port 9000')
 })

@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
 const SearchBook = () => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [books, setBooks] = useState([]);
 
   const handleSearch = async () => {
     if (!query) {
-      alert('Please enter a title to search');
+      alert("Please enter a title to search");
       return;
     }
 
     try {
-        const res = await axios.get(`http://localhost:9000/book/search?title=${query}`);
-      setBooks(res.data.data);
+      const res = await axios.get(
+        `http://localhost:9000/search?title=${query}`
+      );
+      setBooks(res.data);
     } catch (error) {
       console.error(error);
-      alert('Error while fetching books');
+      alert("Error while fetching books");
     }
   };
 

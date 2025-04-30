@@ -1,10 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const UpdateBook = () => {
   const [books, setBooks] = useState([]); // List of books
   const [selectedBook, setSelectedBook] = useState(null); // Book to be updated
-  const [formData, setFormData] = useState({ title: '', author: '', date: '', image: '' }); // Form data
+  const [formData, setFormData] = useState({
+    title: "",
+    author: "",
+    date: "",
+    image: "",
+  }); // Form data
 
   // Fetch all books on component mount
   useEffect(() => {
@@ -13,29 +18,34 @@ const UpdateBook = () => {
 
   const fetchBooks = async () => {
     try {
-      const res = await axios.get('http://localhost:9000/book');
-      setBooks(res.data.data);
+      const res = await axios.get("http://localhost:9000/books");
+      setBooks(res.data);
     } catch (error) {
       console.error(error);
-      alert('Error fetching books');
+      alert("Error fetching books");
     }
   };
 
   const handleUpdate = async (id) => {
     try {
-      await axios.put(`http://localhost:9000/book/${id}`, formData);
-      alert('Book updated successfully');
+      await axios.put(`http://localhost:9000/books/${id}`, formData);
+      alert("Book updated successfully");
       setSelectedBook(null); // Close the form after updating
       fetchBooks(); // Refresh the book list
     } catch (error) {
       console.error(error);
-      alert('Error updating book');
+      alert("Error updating book");
     }
   };
 
   const handleEditClick = (book) => {
     setSelectedBook(book); // Set the selected book for editing
-    setFormData({ title: book.title, author: book.author, date: book.date, image: book.image }); // Pre-fill the form with the book's details
+    setFormData({
+      title: book.title,
+      author: book.author,
+      date: book.date,
+      image: book.image,
+    }); // Pre-fill the form with the book's details
   };
 
   const handleInputChange = (e) => {
@@ -52,7 +62,7 @@ const UpdateBook = () => {
         <ul>
           {books.map((book) => (
             <li key={book._id}>
-              <strong>{book.title}</strong> by {book.author}{' '}
+              <strong>{book.title}</strong> by {book.author}{" "}
               <button onClick={() => handleEditClick(book)}>Edit</button>
             </li>
           ))}
