@@ -18,7 +18,7 @@ const UpdateBook = () => {
 
   const fetchBooks = async () => {
     try {
-      const res = await axios.get("http://localhost:9000/books");
+      const res = await axios.get("https://fsd-a.onrender.com/books");
       setBooks(res.data);
     } catch (error) {
       console.error(error);
@@ -28,7 +28,7 @@ const UpdateBook = () => {
 
   const handleUpdate = async (id) => {
     try {
-      await axios.put(`http://localhost:9000/books/${id}`, formData);
+      await axios.put(`https://fsd-a.onrender.com/books/${id}`, formData);
       alert("Book updated successfully");
       setSelectedBook(null); // Close the form after updating
       fetchBooks(); // Refresh the book list
